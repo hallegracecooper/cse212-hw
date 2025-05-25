@@ -21,8 +21,31 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Create a HashSet for O(1) lookup
+        HashSet<string> wordSet = new HashSet<string>(words);
+        // List to store our pairs
+        List<string> pairs = new List<string>();
+        // HashSet to keep track of words we've already processed
+        HashSet<string> processed = new HashSet<string>();
+
+        foreach (string word in words)
+        {
+            // Create the reverse of the current word
+            string reverse = new string(new[] { word[1], word[0] });
+
+            // Check if:
+            // 1. The reverse exists in our set
+            // 2. The word isn't the same as its reverse (like "aa")
+            // 3. We haven't processed this pair yet
+            if (wordSet.Contains(reverse) && word != reverse && !processed.Contains(word))
+            {
+                pairs.Add($"{word} & {reverse}");
+                processed.Add(word);
+                processed.Add(reverse);
+            }
+        }
+
+        return pairs.ToArray();
     }
 
     /// <summary>
@@ -42,7 +65,19 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            // Get the degree from column 4 (index 3)
+            string degree = fields[3];
+
+            // If we've seen this degree before, increment its count
+            // Otherwise, add it to the dictionary with a count of 1
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -66,8 +101,40 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Create a dictionary to store character counts
+        Dictionary<char, int> charCount = new Dictionary<char, int>();
+
+        // Convert both words to lowercase and remove spaces
+        word1 = word1.ToLower().Replace(" ", "");
+        word2 = word2.ToLower().Replace(" ", "");
+
+        // If the lengths are different after removing spaces, they can't be anagrams
+        if (word1.Length != word2.Length)
+            return false;
+
+        // Count characters in word1
+        foreach (char c in word1)
+        {
+            if (charCount.ContainsKey(c))
+                charCount[c]++;
+            else
+                charCount[c] = 1;
+        }
+
+        // Check characters in word2
+        foreach (char c in word2)
+        {
+            // If character doesn't exist in word1 or count becomes negative, not an anagram
+            if (!charCount.ContainsKey(c))
+                return false;
+
+            charCount[c]--;
+            if (charCount[c] < 0)
+                return false;
+        }
+
+        // All characters matched with correct counts
+        return true;
     }
 
     /// <summary>
@@ -96,11 +163,9 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        // Transform each feature into a formatted string
+        return featureCollection.Features
+            .Select(f => $"{f.Properties.Place} - Mag {f.Properties.Magnitude:F2}")
+            .ToArray();
     }
 }
